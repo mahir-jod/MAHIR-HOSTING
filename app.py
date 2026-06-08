@@ -494,25 +494,25 @@ def create_app():
             f.write(f"\n[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] User command: {cmd}\n")
         return jsonify({'status': 'sent'})
 
-        @app.route('/files/unzip/<folder>', methods=['POST'])
-        def unzip_file(folder):
-            d = request.json
-            zip_name = d.get('name')
-            sub_path = d.get('path', '')
-        
-            # Path safety calculation
-            base = os.path.join(app.config['BASE_STORAGE'], folder, sub_path)
-            zip_path = os.path.join(base, zip_name)
-        
-            if os.path.exists(zip_path) and zipfile.is_zipfile(zip_path):
-                try:
-                    with zipfile.ZipFile(zip_path, 'r') as z:
-                        # Extracts exactly into the current directory
-                        z.extractall(base)
-                    return jsonify({'status': 'success'})
-                except Exception as e:
-                    return jsonify({'status': 'error', 'msg': str(e)})
-            return jsonify({'status': 'error', 'msg': 'Invalid zip file'})
+    @app.route('/files/unzip/<folder>', methods=['POST'])
+    def unzip_file(folder):
+        d = request.json
+        zip_name = d.get('name')
+        sub_path = d.get('path', '')
+    
+        # Path safety calculation
+        base = os.path.join(app.config['BASE_STORAGE'], folder, sub_path)
+        zip_path = os.path.join(base, zip_name)
+    
+        if os.path.exists(zip_path) and zipfile.is_zipfile(zip_path):
+            try:
+                with zipfile.ZipFile(zip_path, 'r') as z:
+                    # Extracts exactly into the current directory
+                    z.extractall(base)
+                return jsonify({'status': 'success'})
+            except Exception as e:
+                return jsonify({'status': 'error', 'msg': str(e)})
+        return jsonify({'status': 'error', 'msg': 'Invalid zip file'})
 
     @app.route('/server/action/<folder>/<act>', methods=['POST'])
     def server_action(folder, act):
