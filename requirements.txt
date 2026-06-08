@@ -6,3 +6,7 @@ psutil==5.9.5
 requests==2.31.0
 python-dotenv==1.0.0
 eventlet==0.33.3
+
+# Production servers (যেকোনো একটি ইনস্টল করুন)
+gunicorn==21.2.0     # Linux/Mac এর জন্য
+waitress==2.1.2      # Windows এর জন্য (সব প্ল্যাটফর্মে কাজ করে)
