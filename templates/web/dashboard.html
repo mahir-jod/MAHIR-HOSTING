@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>MAHIR HOISTING | Ultra Pro Max</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root { 
+      --bg: #050505; 
+      --card: rgba(18, 18, 22, 0.7); 
+      --accent: #007aff; 
+      --border: rgba(255, 255, 255, 0.08); 
+      --text-main: #ffffff;
+      --text-dim: #a1a1aa;
+      --glass: blur(12px);
+      --terminal-bg: #0d0d0f;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body { 
+        margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-main);
+        background-image: radial-gradient(circle at 0% 0%, rgba(0, 122, 255, 0.05) 0%, transparent 40%);
+        min-height: 100vh; overflow-x: hidden;
+    }
+
+    .topbar { display: flex; justify-content: space-between; padding: 12px 20px; background: rgba(10, 10, 12, 0.8); backdrop-filter: var(--glass); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--border); }
+    .logo-box { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+    .logo-icon { background: linear-gradient(135deg, #ff0055, #7000ff); width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; }
+
+    .container { padding: 20px 15px; max-width: 800px; margin: auto; }
+
+    /* Pterodactyl Style Console */
+    #console-wrapper { background: var(--terminal-bg); border-radius: 12px; border: 1px solid #2a2a2e; overflow: hidden; margin-bottom: 15px; }
+    .terminal-header { background: #1a1a1d; padding: 8px 15px; border-bottom: 1px solid #2a2a2e; display: flex; justify-content: space-between; align-items: center; font-family: 'JetBrains Mono'; font-size: 10px; color: #888; }
+    #console { height: 300px; padding: 15px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; color: #d1d1d1; }
+    .terminal-input-area { background: #121214; padding: 10px 15px; border-top: 1px solid #2a2a2e; display: flex; align-items: center; gap: 10px; }
+    .terminal-input-area input { background: transparent; border: none; color: #32d74b; flex: 1; font-family: 'JetBrains Mono'; font-size: 13px; outline: none; }
+    .log-line { margin-bottom: 2px; }
+    .log-time { color: #5c6370; margin-right: 8px; }
+
+    .srv-card { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); transition: 0.3s; backdrop-filter: var(--glass); }
+    .btn { padding: 10px 16px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; transition: 0.2s; }
+    .btn:active { transform: scale(0.95); }
+    .btn-blue { background: var(--accent); color: white; }
+    .btn-gray { background: #1c1c1e; color: #fff; border: 1px solid var(--border); }
+    
+    /* Startup Selector Style */
+    .startup-selector { background: var(--card); border-radius: 18px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--border); backdrop-filter: var(--glass); }
+    .startup-label { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .startup-select { width: 100%; padding: 10px 12px; background: #1c1c1e; border: 1px solid var(--border); border-radius: 12px; color: white; font-family: 'JetBrains Mono'; font-size: 13px; cursor: pointer; transition: 0.2s; }
+    .startup-select:hover { border-color: var(--accent); }
+    .current-startup { font-size: 10px; color: #32d74b; margin-top: 8px; }
+
+    .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+    .menu-content { background: #1c1c22; width: 280px; border-radius: 20px; border: 1px solid var(--border); }
+    .menu-item { padding: 14px 20px; color: #fff; cursor: pointer; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    
+    #editor { display:none; position:fixed; inset:0; background:var(--bg); z-index:6000; padding:15px; }
+    .CodeMirror { height: 85vh; border-radius: 12px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo-box">
+        <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+        <span>MAHIR HOISTING</span>
+    </div>
+    <div style="display:flex; gap:10px;">
+        <button class="btn btn-gray" onclick="location.href='/logout'"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+</div>
+
+<div class="container" id="homeView">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 style="margin:0;">Instances</h2>
+        <button class="btn btn-blue" onclick="createServer()"><i class="fas fa-plus"></i> Create</button>
+    </div>
+    <div id="srvList"></div>
+</div>
+
+<div class="container" id="manageView" style="display:none">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <button class="btn btn-gray" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+        <div id="vUptime" style="font-size:11px; font-family:'JetBrains Mono'; color:var(--text-dim);">OFFLINE</div>
+    </div>
+
+    <!-- Startup File Selector Section -->
+    <div class="startup-selector">
+        <div class="startup-label">
+            <i class="fas fa-rocket" style="color: var(--accent);"></i>
+            <span>STARTUP FILE</span>
+        </div>
+        <select id="startupFileSelect" class="startup-select" onchange="changeStartupFile()">
+            <option value="">Loading Python files...</option>
+        </select>
+        <div class="current-startup" id="currentStartupDisplay">
+            <i class="fas fa-info-circle"></i> Current: <span id="currentStartupName">main.py</span>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-bottom:15px;">
+        <button class="btn btn-blue" style="justify-content:center" onclick="srvAction('start')"><i class="fas fa-play"></i> START</button>
+        <button class="btn btn-gray" style="justify-content:center" onclick="srvAction('restart')"><i class="fas fa-sync"></i> RESTART</button>
+        <button class="btn btn-gray" style="justify-content:center; color:#ff453a" onclick="srvAction('stop')"><i class="fas fa-stop"></i> STOP</button>
+    </div>
+
+    <div id="console-wrapper">
+        <div class="terminal-header">
+            <span><i class="fas fa-terminal"></i> CONSOLE</span>
+            <span id="vSrvName" style="color:var(--accent)">-</span>
+        </div>
+        <div id="console"></div>
+        <div class="terminal-input-area">
+            <span style="color:var(--accent); font-weight:bold;">$</span>
+            <input type="text" id="termCmd" placeholder="Type a command..." onkeydown="if(event.key==='Enter') sendConsoleCommand()">
+        </div>
+    </div>
+
+    <div style="background:var(--card); border-radius:18px; border:1px solid var(--border); overflow:hidden;">
+        <div style="padding:15px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:800; font-size:13px;">FILE MANAGER</span>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-gray" style="padding:5px 10px" onclick="document.getElementById('fUp').click()"><i class="fas fa-upload"></i></button>
+                <button class="btn btn-gray" style="padding:5px 10px" onclick="createNew('file')"><i class="fas fa-plus"></i></button>
+                <button class="btn btn-gray" style="padding:5px 10px" onclick="refreshFiles()"><i class="fas fa-sync-alt"></i></button>
+                <input type="file" id="fUp" hidden onchange="uploadFile(this)">
+            </div>
+        </div>
+        <div id="fileList"></div>
+    </div>
+</div>
+
+<div class="menu-overlay" id="menuOverlay" onclick="this.style.display='none'">
+    <div class="menu-content" onclick="event.stopPropagation()">
+        <div class="menu-item" id="btnEdit"><i class="fas fa-edit"></i> Edit File</div>
+        <div class="menu-item" id="btnSetStartup"><i class="fas fa-play-circle"></i> Set as Startup</div>
+        <div class="menu-item" id="btnRename"><i class="fas fa-pen"></i> Rename</div>
+        <div class="menu-item" id="btnZip"><i class="fas fa-file-archive"></i> Archive</div>
+        <div class="menu-item" id="btnUnzip"><i class="fas fa-box-open"></i> Unzip</div>
+        <div class="menu-item" id="btnDelete" style="color:#ff453a"><i class="fas fa-trash"></i> Delete</div>
+    </div>
+</div>
+
+<div id="editor">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <span id="edFile" style="font-family:'JetBrains Mono'; font-size:13px;"></span>
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-gray" onclick="closeEditor()">CLOSE</button>
+            <button class="btn btn-blue" onclick="saveFile()">SAVE CHANGES</button>
+        </div>
+    </div>
+    <textarea id="edText"></textarea>
+</div>
+
+<script>
+let curSrv = null; let logItv = null; let currentSubPath = ""; let editorInstance = null;
+let currentFileContext = null;
+
+// Original Load Logic
+async function loadSrv() {
+    const r = await fetch('/servers'); const d = await r.json();
+    document.getElementById('srvList').innerHTML = d.servers.map(s => `
+        <div class="srv-card animate__animated animate__fadeInUp">
+            <div onclick='openSrv(${JSON.stringify(s)})' style="cursor:pointer; flex:1">
+                <div style="font-weight:800; font-size:16px;">${s.name}</div>
+                <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">${s.folder}</div>
+            </div>
+            <div style="text-align:right">
+                <div style="font-size:10px; color:${s.online?'#32d74b':'#666'}">${s.online?'RUNNING':'OFFLINE'}</div>
+                <div style="font-size:10px; color:#555; margin-top:5px;">${s.cpu} | ${s.ram}</div>
+            </div>
+        </div>`).join('');
+}
+
+function goBack() {
+    if(logItv) clearInterval(logItv);
+    curSrv = null;
+    document.getElementById('manageView').style.display = 'none';
+    document.getElementById('homeView').style.display = 'block';
+    loadSrv();
+}
+
+async function loadPythonFiles() {
+    if(!curSrv) return;
+    const r = await fetch(`/files/list/${curSrv.folder}?path=`);
+    const files = await r.json();
+    const pythonFiles = files.filter(f => !f.is_dir && f.name.endsWith('.py'));
+    
+    const select = document.getElementById('startupFileSelect');
+    select.innerHTML = '<option value="">Select startup file...</option>';
+    
+    pythonFiles.forEach(f => {
+        const option = document.createElement('option');
+        option.value = f.name;
+        option.textContent = f.name;
+        select.appendChild(option);
+    });
+    
+    // Load current startup file
+    await loadCurrentStartup();
+}
+
+async function loadCurrentStartup() {
+    if(!curSrv) return;
+    const res = await fetch(`/server/get-startup/${curSrv.folder}`);
+    const data = await res.json();
+    if(data.startup) {
+        document.getElementById('currentStartupName').innerText = data.startup;
+        document.getElementById('startupFileSelect').value = data.startup;
+    }
+}
+
+async function changeStartupFile() {
+    const select = document.getElementById('startupFileSelect');
+    const selectedFile = select.value;
+    if(!selectedFile) return;
+    
+    Swal.fire({
+        title: 'Change Startup File?',
+        text: `Set "${selectedFile}" as startup file? Server will use this file on start/restart.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, change it!'
+    }).then(async (result) => {
+        if(result.isConfirmed) {
+            const res = await fetch(`/server/set-startup/${curSrv.folder}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file: selectedFile })
+            });
+            const data = await res.json();
+            if(data.status === 'success') {
+                document.getElementById('currentStartupName').innerText = selectedFile;
+                notify(`Startup file changed to ${selectedFile}`);
+                Swal.fire('Updated!', `Server will now use ${selectedFile}`, 'success');
+            } else {
+                Swal.fire('Error', 'Failed to change startup file', 'error');
+            }
+        } else {
+            // Revert select to current value
+            loadCurrentStartup();
+        }
+    });
+}
+
+async function setAsStartupFromMenu() {
+    if(!currentFileContext) return;
+    const fileName = currentFileContext.name;
+    if(!fileName.endsWith('.py')) {
+        Swal.fire('Invalid File', 'Only Python (.py) files can be set as startup!', 'error');
+        return;
+    }
+    
+    const res = await fetch(`/server/set-startup/${curSrv.folder}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: fileName })
+    });
+    const data = await res.json();
+    if(data.status === 'success') {
+        document.getElementById('currentStartupName').innerText = fileName;
+        document.getElementById('startupFileSelect').value = fileName;
+        notify(`${fileName} set as startup file`);
+        Swal.fire('Success!', `${fileName} will now start with the server`, 'success');
+    } else {
+        Swal.fire('Error', 'Failed to set startup file', 'error');
+    }
+    document.getElementById('menuOverlay').style.display = 'none';
+}
+
+function openSrv(s) {
+    curSrv = s; 
+    document.getElementById('homeView').style.display='none'; 
+    document.getElementById('manageView').style.display='block';
+    document.getElementById('vSrvName').innerText = s.name;
+    currentSubPath = "";
+    loadFiles(); 
+    loadPythonFiles();
+    startLogs();
+}
+
+// Fixed Unzip Function (Works with sub-folders)
+async function unzipAction(name) {
+    Swal.fire({title:'Extracting...', allowOutsideClick:false, didOpen:()=>Swal.showLoading()});
+    const res = await fetch(`/files/unzip/${curSrv.folder}`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name: name, path: currentSubPath})
+    });
+    const d = await res.json(); Swal.close();
+    if(d.status==='success'){ loadFiles(); notify("Extracted!"); loadPythonFiles(); } 
+    else { Swal.fire('Error', d.msg, 'error'); }
+}
+
+function startLogs() {
+    if(logItv) clearInterval(logItv);
+    logItv = setInterval(async () => {
+        if(!curSrv) return;
+        const r = await fetch(`/server/log/${curSrv.folder}`); const d = await r.json();
+        const c = document.getElementById('console');
+        if(d.log && d.log !== c.getAttribute('data-raw')) {
+            c.setAttribute('data-raw', d.log);
+            c.innerHTML = d.log.split('\n').map(l => l.trim() ? `<div class="log-line"><span class="log-time">[${new Date().toLocaleTimeString()}]</span>${escapeHtml(l)}</div>` : '').join('');
+            c.scrollTop = c.scrollHeight;
+        }
+        // Get uptime info
+        const uptimeRes = await fetch(`/server/uptime/${curSrv.folder}`);
+        const uptimeData = await uptimeRes.json();
+        document.getElementById('vUptime').innerText = uptimeData.online ? 'UPTIME: ' + uptimeData.uptime : 'OFFLINE';
+    }, 1000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+async function loadFiles() {
+    const r = await fetch(`/files/list/${curSrv.folder}?path=${encodeURIComponent(currentSubPath)}`); 
+    const d = await r.json();
+    document.getElementById('fileList').innerHTML = d.map(f => `
+        <div class="file-item" ondblclick="${f.is_dir ? `enterFolder('${f.name}')` : `editFile('${f.name}')`}">
+            <span onclick="${f.is_dir ? `enterFolder('${f.name}')` : ''}" style="flex:1; cursor:${f.is_dir ? 'pointer' : 'default'}">
+                <i class="fas ${f.is_dir?'fa-folder':'fa-file'}"></i> ${f.name}
+            </span>
+            <i class="fas fa-ellipsis-v" onclick="event.stopPropagation(); openFileMenu('${f.name}', ${f.is_zip}, ${f.is_dir})"></i>
+        </div>`).join('');
+}
+
+function refreshFiles() {
+    loadFiles();
+    loadPythonFiles();
+}
+
+function openFileMenu(name, isZip, isDir) {
+    currentFileContext = { name: name, isZip: isZip, isDir: isDir };
+    document.getElementById('btnEdit').style.display = isDir ? 'none' : 'flex';
+    document.getElementById('btnSetStartup').style.display = (isDir || !name.endsWith('.py')) ? 'none' : 'flex';
+    document.getElementById('btnUnzip').style.display = isZip ? 'flex' : 'none';
+    document.getElementById('btnEdit').onclick = () => { editFile(name); document.getElementById('menuOverlay').style.display = 'none'; };
+    document.getElementById('btnSetStartup').onclick = () => setAsStartupFromMenu();
+    document.getElementById('btnUnzip').onclick = () => { unzipAction(name); document.getElementById('menuOverlay').style.display = 'none'; };
+    document.getElementById('btnDelete').onclick = () => { deleteFile(name); document.getElementById('menuOverlay').style.display = 'none'; };
+    document.getElementById('btnRename').onclick = () => { renameFile(name); document.getElementById('menuOverlay').style.display = 'none'; };
+    document.getElementById('menuOverlay').style.display = 'flex';
+}
+
+function enterFolder(n) { 
+    currentSubPath += (currentSubPath===""?"":"/")+n; 
+    loadFiles(); 
+}
+
+async function srvAction(a) { 
+    const res = await fetch(`/server/action/${curSrv.folder}/${a}`, {method:'POST'});
+    const data = await res.json();
+    if(data.status === 'error') {
+        Swal.fire('Error', data.msg || 'Action failed', 'error');
+    } else {
+        notify(`${a.toUpperCase()} command sent`);
+    }
+}
+
+async function createServer() { 
+    const {value:n} = await Swal.fire({title:'Server Name', input:'text'}); 
+    if(n){ 
+        await fetch('/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n})}); 
+        loadSrv();
+    }
+}
+
+async function editFile(n) {
+    const res = await fetch(`/files/content/${curSrv.folder}/${encodeURIComponent(n)}?path=${encodeURIComponent(currentSubPath)}`);
+    const data = await res.json();
+    document.getElementById('edFile').innerText = n;
+    document.getElementById('edText').value = data.content;
+    document.getElementById('editor').style.display = 'block';
+    if(!editorInstance) {
+        editorInstance = CodeMirror.fromTextArea(document.getElementById('edText'), { mode: "python", theme: "dracula", lineNumbers: true });
+    } else { 
+        editorInstance.setValue(data.content); 
+    }
+}
+
+async function saveFile() {
+    const n = document.getElementById('edFile').innerText;
+    const c = editorInstance.getValue();
+    await fetch(`/files/save/${curSrv.folder}/${encodeURIComponent(n)}`, {
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body:JSON.stringify({content: c, path: currentSubPath})
+    });
+    closeEditor(); 
+    notify("Saved");
+    loadPythonFiles(); // Refresh startup file list
+}
+
+async function uploadFile(input) {
+    if(!input.files[0]) return;
+    let fd = new FormData(); 
+    fd.append("file", input.files[0]); 
+    fd.append("path", currentSubPath);
+    await fetch(`/files/upload/${curSrv.folder}`, {method:'POST', body:fd}); 
+    loadFiles(); 
+    loadPythonFiles();
+    notify("Uploaded");
+}
+
+async function createNew(type) {
+    const {value:n} = await Swal.fire({title:'New '+type, input:'text'});
+    if(n){
+        const url = type==='file' ? `/files/create-file/${curSrv.folder}` : `/files/create-folder/${curSrv.folder}`;
+        await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name:n, path: currentSubPath})});
+        loadFiles();
+        if(type === 'file') loadPythonFiles();
+    }
+}
+
+async function deleteFile(n) {
+    const res = await Swal.fire({title:'Delete?', text:n, icon:'warning', showCancelButton:true});
+    if(res.isConfirmed) {
+        await fetch(`/files/delete-bulk/${curSrv.folder}`, {
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({names:[n], path: currentSubPath})
+        });
+        loadFiles();
+        loadPythonFiles();
+        notify("Deleted");
+    }
+}
+
+async function renameFile(n) {
+    const {value:newName} = await Swal.fire({title:'Rename', input:'text', inputValue:n});
+    if(newName && newName !== n) {
+        await fetch(`/files/rename/${curSrv.folder}`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({old:n, new:newName, path: currentSubPath})
+        });
+        loadFiles();
+        loadPythonFiles();
+        notify("Renamed");
+    }
+}
+
+function sendConsoleCommand() {
+    const cmd = document.getElementById('termCmd').value;
+    if(cmd) { 
+        fetch(`/server/command/${curSrv.folder}`, {
+            method:'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body:JSON.stringify({command:cmd})
+        }); 
+        document.getElementById('termCmd').value=''; 
+    }
+}
+
+function closeEditor() { 
+    document.getElementById('editor').style.display='none'; 
+}
+
+function notify(t) { 
+    Swal.fire({toast:true, position:'top-end', timer:2000, title:t, showConfirmButton:false, icon:'success'}); 
+}
+
+document.addEventListener('DOMContentLoaded', loadSrv);
+</script>
+</body>
+</html>
